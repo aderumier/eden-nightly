@@ -23,7 +23,7 @@
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_DISPLAY_NAME}.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_DISPLAY_NAME}"
 !define BINARY_SOURCE_DIR "..\eden\build\bin"
-!define MUI_ICON "eden.ico"
+!define MUI_ICON "..\eden\dist\eden.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 ; Setup MultiUser support:
