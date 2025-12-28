@@ -394,7 +394,7 @@ jobs:
 
       - name: Compile Eden FreeBSD
         if: matrix.target == 'FreeBSD'
-        uses: vmactions/freebsd-vm@v1.3.4
+        uses: vmactions/freebsd-vm@v1.3.0
         with:
           usesh: true
           envs: 'TARGET CCACHE_DIR CCACHE_COMPILERCHECK CCACHE_SLOPPINESS'
