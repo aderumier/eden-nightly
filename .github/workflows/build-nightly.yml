@@ -405,7 +405,7 @@ jobs:
 
       - name: Compile Eden Solaris
         if: matrix.target == 'Solaris'
-        uses: vmactions/solaris-vm@v1.2.2
+        uses: vmactions/solaris-vm@v1.2.3
         with:
           usesh: true
           envs: 'TARGET CCACHE_DIR CCACHE_COMPILERCHECK CCACHE_SLOPPINESS'
