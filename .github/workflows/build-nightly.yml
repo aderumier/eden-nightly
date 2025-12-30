@@ -1,29 +1,27 @@
 name: Build
-run-name: Build ${{ github.event.inputs.job_to_run }}
+run-name: Build ${{ github.event.inputs.job_to_run || 'Auto Release' }}
 
 concurrency:
-  group: build-eden-${{ github.ref }}-${{ github.event.inputs.job_to_run || 'all' }}
+  group: build-eden-${{ github.ref }}-${{ github.event.inputs.job_to_run || 'Auto Release' }}
   cancel-in-progress: true
 
 on:
+  schedule:
+    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       job_to_run:
         type: choice
         description: 'Choose target build platform'
-        options:
-          - all
-          - windows
-          - appimage
-          - macos
-          - android
-          - bsd
-          - info
-        default: 'all'
+        options: [release, windows, appimage, macos, android, bsd, info]
+        default: 'release'
 
 jobs:
   info:
-    if: github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'info'
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.job_to_run == 'release' ||
+      github.event.inputs.job_to_run == 'info'
     runs-on: ubuntu-latest
     name: "Changelog"
     strategy:
@@ -75,7 +73,10 @@ jobs:
           path: artifacts
 
   appimage:
-    if: github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'appimage'
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.job_to_run == 'release' ||
+      github.event.inputs.job_to_run == 'appimage'
     runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
@@ -154,7 +155,10 @@ jobs:
           path: eden/appbundle
 
   android:
-    if: github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'android'
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.job_to_run == 'release' || 
+      github.event.inputs.job_to_run == 'android'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -193,7 +197,10 @@ jobs:
           path: eden/src/android/artifacts/
 
   windows:
-    if: github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'windows'
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.job_to_run == 'release' ||
+      github.event.inputs.job_to_run == 'windows'
     runs-on: ${{ matrix.runs-on }}
     name: "Windows ${{ matrix.toolchain }} ${{ matrix.optimize }} (${{ matrix.arch }})"
     strategy:
@@ -318,7 +325,10 @@ jobs:
           path: installer/artifacts/
 
   macos:
-    if: github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'macos'
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.job_to_run == 'release' ||
+      github.event.inputs.job_to_run == 'macos'
     runs-on: macos-latest
     name: "MacOS (${{ matrix.target }})"
     strategy:
@@ -363,7 +373,10 @@ jobs:
           path: eden/build/artifacts/
 
   bsd:
-    if: github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'bsd'
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.job_to_run == 'release' ||
+      github.event.inputs.job_to_run == 'bsd'
     name: ${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -427,7 +440,9 @@ jobs:
           path: eden/build/artifacts/
 
   release:
-    if: github.ref_name == 'main' && github.event.inputs.job_to_run == 'all'
+    if: |
+      github.ref_name == 'main' && 
+      (github.event_name == 'schedule' || github.event.inputs.job_to_run == 'release')
     name: "release"
     needs: [info, appimage, windows, macos, android, bsd]
     permissions:
