@@ -69,6 +69,7 @@ jobs:
             echo "-- Pull request detected, proceeding with the build."
             echo "should_skip=false" >> "$GITHUB_OUTPUT"
           elif [ "$NEW_COUNT" = "$OLD_COUNT" ]; then
+            echo "::notice title=Build Skipped::No new commits detected (Current count: $NEW_COUNT). Skipping downstream jobs."
             echo "should_skip=true" >> "$GITHUB_OUTPUT"
             echo "-- [SKIP] No changes detected. Current version is up to date."
           else
