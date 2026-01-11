@@ -28,13 +28,6 @@ if [ "$TARGET" = "Coexist" ]; then
 	echo "   Done."
 fi        
 
-if [ "$TARGET" = "ChromeOS" ]; then
-    # fix build error
-	echo "-- Applying arm patch..."
-	git apply ../patches/arm.patch
-	echo "   Done."
-fi
-
 # Set extra cmake flags
 CMAKE_FLAGS=(
     "-DCMAKE_C_COMPILER_LAUNCHER=sccache"
