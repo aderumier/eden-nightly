@@ -34,9 +34,8 @@ echo "   Done."
 # Set Base CMake flags
 declare -a BASE_CMAKE_FLAGS=(
     "-DBUILD_TESTING=OFF"
-    "-DDYNARMIC_TESTS=OFF"
-    "-DYUZU_TESTS=OFF"
-    "-DYUZU_USE_BUNDLED_QT=OFF"
+    "-DYUZU_USE_BUNDLED_QT=ON"
+    "-DYUZU_STATIC_BUILD=ON"
     "-DYUZU_USE_BUNDLED_FFMPEG=ON"
     "-DENABLE_QT_TRANSLATION=ON"
     "-DENABLE_UPDATE_CHECKER=ON"
@@ -50,7 +49,7 @@ declare -a BASE_CMAKE_FLAGS=(
 # Set Extra CMake flags
 declare -a EXTRA_CMAKE_FLAGS=()
 case "${TOOLCHAIN}" in
-    clang)
+    Clang)
         if [[ "${OPTIMIZE}" == "PGO" ]]; then
             EXTRA_CMAKE_FLAGS+=(
                 "-DCMAKE_C_COMPILER=clang-cl"
@@ -69,33 +68,37 @@ case "${TOOLCHAIN}" in
             )
         fi
     ;;
-    msys2)
+    MSYS2)
+        case "$ARCH" in
+            x86_64)
+                ARCH_FLAGS="-march=x86-64-v3 -mtune=generic"
+            ;;
+            arm64)
+                ARCH_FLAGS="-march=armv8-a -mtune=generic"
+            ;;
+        esac
+        
         if [[ "${OPTIMIZE}" == "PGO" ]]; then
             EXTRA_CMAKE_FLAGS+=(
-                "-DYUZU_STATIC_BUILD=ON"
                 "-DYUZU_DISABLE_LLVM=ON"
-                "-DQt6_DIR=D:/a/_temp/msys64/MINGW64/qt6-static/lib/cmake/Qt6"
                 "-DCMAKE_C_COMPILER=clang"
                 "-DCMAKE_CXX_COMPILER=clang++"
-                "-DCMAKE_CXX_FLAGS=-march=x86-64-v3 -mtune=generic -fuse-ld=lld -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -fprofile-correction -w"
-                "-DCMAKE_C_FLAGS=-march=x86-64-v3 -mtune=generic -fuse-ld=lld -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -fprofile-correction -w"
+                "-DCMAKE_CXX_FLAGS=${ARCH_FLAGS} -fuse-ld=lld -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -fprofile-correction -w"
+                "-DCMAKE_C_FLAGS=${ARCH_FLAGS} -fuse-ld=lld -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -fprofile-correction -w"
             )
         else
             EXTRA_CMAKE_FLAGS+=(
-                "-DYUZU_STATIC_BUILD=ON"
                 "-DYUZU_DISABLE_LLVM=ON"
-                "-DQt6_DIR=D:/a/_temp/msys64/MINGW64/qt6-static/lib/cmake/Qt6"
-                "-DCMAKE_CXX_FLAGS=-march=x86-64-v3 -mtune=generic -O3 -w"
-                "-DCMAKE_C_FLAGS=-march=x86-64-v3 -mtune=generic -O3 -w"
+                "-DCMAKE_CXX_FLAGS=${ARCH_FLAGS} -O3 -w"
+                "-DCMAKE_C_FLAGS=${ARCH_FLAGS} -O3 -w"
                 "-DCMAKE_C_COMPILER_LAUNCHER=sccache"
                 "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
             )
         fi
     ;;
-    msvc)
+    MSVC)
         EXTRA_CMAKE_FLAGS+=(
-        "-DYUZU_ENABLE_LTO=ON"
-        "-DDYNARMIC_ENABLE_LTO=ON"
+        "-DENABLE_LTO=OFF"
         "-DCMAKE_C_COMPILER_LAUNCHER=sccache"
         "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
         )
@@ -124,27 +127,22 @@ if [[ "${OPTIMIZE}" == "normal" ]]; then
     sccache -s
 fi
 
-# Gather dependencies
-if [[ "${TOOLCHAIN}" != "msys2" ]]; then
-    echo "-- Gathering QT dependencies..."
-    windeployqt6 --release --no-compiler-runtime --no-opengl-sw --no-system-dxc-compiler --no-system-d3d-compiler --dir bin ./bin/eden.exe
-fi
-
 # Delete un-needed debug files
 echo "-- Cleaning up un-needed files..."
-if [[ "${TOOLCHAIN}" == "msys2" ]]; then
+if [[ "${TOOLCHAIN}" == "MSYS2" ]]; then
     find ./bin -type f \( -name "*.dll" -o -name "*.exe" \) -exec strip -s {} +
 else
     find bin -type f -name "*.pdb" -exec rm -fv {} +
+    rm -rf ./bin/plugins
 fi
 
 # Pack for upload
 echo "-- Packing build artifacts..."
-mkdir -p artifacts
-mkdir "$EXE_NAME"
-cp -rv bin/* "$EXE_NAME"
+cd bin
+mv -v eden.exe "$EXE_NAME".exe
 ZIP_NAME="$EXE_NAME.7z"
-7z a -t7z -mx=9 "$ZIP_NAME" "$EXE_NAME"
-mv -v "$ZIP_NAME" artifacts/
+7z a -t7z -mx=9 "$ZIP_NAME" *
+rm -v "$EXE_NAME".exe
+echo "-- Packed into $ZIP_NAME"
 
 echo "=== ALL DONE! ==="

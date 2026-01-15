@@ -35,7 +35,7 @@ elif [ "$TARGET" = "FreeBSD" ]; then
 
     QT6_DIR="/usr/local/lib/cmake/Qt6"
     EXTRA_CMAKE_FLAGS+=(
-      "-DYUZU_ENABLE_LTO=ON"
+      "-DENABLE_LTO=ON"
       "-DYUZU_CMD=OFF"
       "-DYUZU_USE_BUNDLED_QT=OFF"
       "-DENABLE_QT_TRANSLATION=ON"
@@ -49,7 +49,7 @@ fi
 mkdir -p build
 cd build
 cmake .. -GNinja \
-    -DYUZU_TESTS=OFF \
+    -DBUILD_TESTING=OFF \
     -DYUZU_USE_BUNDLED_SIRIT=ON \
     -DYUZU_USE_CPM=ON \
     -DUSE_DISCORD_PRESENCE=OFF \
