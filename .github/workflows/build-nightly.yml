@@ -65,17 +65,18 @@ jobs:
           echo "   Previous Release Count: $OLD_COUNT"
           echo "   Current Source Count:  $NEW_COUNT"
 
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "-- Pull request detected, proceeding with the build."
-            echo "should_skip=false" >> "$GITHUB_OUTPUT"
-          elif [ "$NEW_COUNT" = "$OLD_COUNT" ]; then
-            echo "::notice title=Build Skipped::No new commits detected (Current count: $NEW_COUNT). Skipping downstream jobs."
+          SKIP_DECISION="false"
+
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ "$NEW_COUNT" = "$OLD_COUNT" ]; then
+            echo "::notice title=Release Skipped::No new commits detected (Current count: $NEW_COUNT). Release will be skipped."
             echo "should_skip=true" >> "$GITHUB_OUTPUT"
-            echo "-- [SKIP] No changes detected. Current version is up to date."
+            echo "-- [SKIP] No new commits detected. Release will be skipped."
+            SKIP_DECISION="true"
           else
-            echo "should_skip=false" >> "$GITHUB_OUTPUT"
             echo "-- [PROCEED] New changes detected. Starting release process."
           fi
+
+          echo "should_skip=$SKIP_DECISION" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6.0.0
@@ -90,10 +91,10 @@ jobs:
     needs: [info]
     if: |
       !cancelled() && (
-        (github.event_name == 'schedule' && needs.info.outputs.should_skip != 'true') ||
+        github.event_name == 'schedule' ||
         github.event_name == 'pull_request' ||
-        (github.event.inputs.job_to_run == 'release' && needs.info.outputs.should_skip != 'true') ||
-        (github.event.inputs.job_to_run == 'source')
+        github.event.inputs.job_to_run == 'release' ||
+        github.event.inputs.job_to_run == 'source'
       )
     runs-on: ubuntu-latest
     name: "Source"
@@ -120,10 +121,10 @@ jobs:
     needs: [info]
     if: |
       !cancelled() && (
-        (github.event_name == 'schedule' && needs.info.outputs.should_skip != 'true') ||
+        github.event_name == 'schedule' ||
         github.event_name == 'pull_request' ||
-        (github.event.inputs.job_to_run == 'release' && needs.info.outputs.should_skip != 'true') ||
-        (github.event.inputs.job_to_run == 'appimage')
+        github.event.inputs.job_to_run == 'release' ||
+        github.event.inputs.job_to_run == 'appimage'
       )
     runs-on: ${{ matrix.runs-on }}
     strategy:
@@ -206,10 +207,10 @@ jobs:
     needs: [info]
     if: |
       !cancelled() && (
-        (github.event_name == 'schedule' && needs.info.outputs.should_skip != 'true') ||
+        github.event_name == 'schedule' ||
         github.event_name == 'pull_request' ||
-        (github.event.inputs.job_to_run == 'release' && needs.info.outputs.should_skip != 'true') ||
-        (github.event.inputs.job_to_run == 'android')
+        github.event.inputs.job_to_run == 'release' ||
+        github.event.inputs.job_to_run == 'android'
       )
     runs-on: ubuntu-latest
     strategy:
@@ -252,10 +253,10 @@ jobs:
     needs: [info]
     if: |
       !cancelled() && (
-        (github.event_name == 'schedule' && needs.info.outputs.should_skip != 'true') ||
+        github.event_name == 'schedule' ||
         github.event_name == 'pull_request' ||
-        (github.event.inputs.job_to_run == 'release' && needs.info.outputs.should_skip != 'true') ||
-        (github.event.inputs.job_to_run == 'windows')
+        github.event.inputs.job_to_run == 'release' ||
+        github.event.inputs.job_to_run == 'windows'
       )
     runs-on: ${{ matrix.runs-on }}
     name: "Windows ${{ matrix.toolchain }} ${{ matrix.optimize }} (${{ matrix.arch }})"
@@ -358,10 +359,10 @@ jobs:
     needs: [info]
     if: |
       !cancelled() && (
-        (github.event_name == 'schedule' && needs.info.outputs.should_skip != 'true') ||
+        github.event_name == 'schedule' ||
         github.event_name == 'pull_request' ||
-        (github.event.inputs.job_to_run == 'release' && needs.info.outputs.should_skip != 'true') ||
-        (github.event.inputs.job_to_run == 'macos')
+        github.event.inputs.job_to_run == 'release' ||
+        github.event.inputs.job_to_run == 'macos'
       )
     runs-on: macos-latest
     name: "MacOS (${{ matrix.target }})"
@@ -402,10 +403,10 @@ jobs:
     needs: [info]
     if: |
       !cancelled() && (
-        (github.event_name == 'schedule' && needs.info.outputs.should_skip != 'true') ||
+        github.event_name == 'schedule' ||
         github.event_name == 'pull_request' ||
-        (github.event.inputs.job_to_run == 'release' && needs.info.outputs.should_skip != 'true') ||
-        (github.event.inputs.job_to_run == 'bsd')
+        github.event.inputs.job_to_run == 'release' ||
+        github.event.inputs.job_to_run == 'bsd'
       )
     name: ${{ matrix.target }}
     runs-on: ubuntu-latest
