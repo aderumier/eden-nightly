@@ -65,18 +65,16 @@ jobs:
           echo "   Previous Release Count: $OLD_COUNT"
           echo "   Current Source Count:  $NEW_COUNT"
 
-          SKIP_DECISION="false"
-
           if [ "${{ github.event_name }}" != "pull_request" ] && [ "$NEW_COUNT" = "$OLD_COUNT" ]; then
             echo "::notice title=Release Skipped::No new commits detected (Current count: $NEW_COUNT). Release will be skipped."
-            echo "should_skip=true" >> "$GITHUB_OUTPUT"
             echo "-- [SKIP] No new commits detected. Release will be skipped."
-            SKIP_DECISION="true"
+            SKIP="true"
           else
             echo "-- [PROCEED] New changes detected. Starting release process."
+            SKIP="false"
           fi
 
-          echo "should_skip=$SKIP_DECISION" >> "$GITHUB_OUTPUT"
+          echo "should_skip=$SKIP" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6.0.0
