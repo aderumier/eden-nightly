@@ -31,6 +31,13 @@ echo "-- Applying updater patch..."
 git apply ../patches/update.patch
 echo "   Done."
 
+# fix PGO caused error?
+if [[ "${OPTIMIZE}" == "PGO" ]]; then
+    echo "-- Applying PGO error patch..."
+    git apply ../patches/opengl.patch
+    echo "   Done."
+fi
+
 # Set Base CMake flags
 declare -a BASE_CMAKE_FLAGS=(
     "-DYUZU_USE_BUNDLED_QT=OFF"
