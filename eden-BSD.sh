@@ -28,10 +28,6 @@ elif [ "$TARGET" = "FreeBSD" ]; then
     # hook the updater to check my repo
     git apply ../patches/update.patch
 
-    export CC=clang20
-    export CXX=clang++20
-    export LD=ld.lld20
-
     EXTRA_CMAKE_FLAGS+=(
       "-DENABLE_LTO=ON"
       "-DYUZU_CMD=OFF"
@@ -39,8 +35,8 @@ elif [ "$TARGET" = "FreeBSD" ]; then
       "-DYUZU_USE_BUNDLED_SDL2=ON"
       "-DENABLE_QT_TRANSLATION=ON"
       "-DENABLE_UPDATE_CHECKER=ON"
-      "-DCMAKE_CXX_FLAGS=-Ofast -pipe -fuse-ld=lld -w"
-      "-DCMAKE_C_FLAGS=-Ofast -pipe -fuse-ld=lld -w"
+      "-DCMAKE_CXX_FLAGS=-march=x86-64-v3 -mtune=generic -O3 -pipe"
+      "-DCMAKE_C_FLAGS=-march=x86-64-v3 -mtune=generic -O3 -pipe"
     )
 fi
 
@@ -114,21 +110,7 @@ if [ -f "${PKG_DIR}/bin/eden" ]; then
     find "${PKG_DIR}/lib" -type f -name '*.so*' -exec strip {} \;
 
   # Create a launcher for the pack
-  cat > "${PKG_NAME}/launch.sh" <<EOF
-#!/bin/sh
-# Eden Launcher for "${TARGET}"
-
-DIR=\$(dirname "\$0")/usr/local
-BIN="\$(ls "\$DIR/bin/" | head -1)"
-
-export LD_LIBRARY_PATH="\$DIR/lib:\$DIR/lib/qt6:\$LD_LIBRARY_PATH"
-export QT_PLUGIN_PATH="\$DIR/lib/qt6/plugins"
-export QT_QPA_PLATFORM_PLUGIN_PATH="\$QT_PLUGIN_PATH/platforms"
-export QT_TRANSLATIONS_PATH="\$DIR/share/translations"
-
-exec "\$DIR/bin/\$BIN" "\$@"
-EOF
-
+  cp -v ../../launch.sh "${PKG_NAME}"
   chmod +x "${PKG_NAME}/launch.sh"
 
 fi
