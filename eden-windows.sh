@@ -54,15 +54,15 @@ case "${TOOLCHAIN}" in
             EXTRA_CMAKE_FLAGS+=(
                 "-DCMAKE_C_COMPILER=clang-cl"
                 "-DCMAKE_CXX_COMPILER=clang-cl"
-                "-DCMAKE_CXX_FLAGS=-Ofast -DNOMINMAX -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -Wno-backend-plugin -Wno-profile-instr-unprofiled -Wno-profile-instr-out-of-date"
-                "-DCMAKE_C_FLAGS=-Ofast -DNOMINMAX -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -Wno-backend-plugin -Wno-profile-instr-unprofiled -Wno-profile-instr-out-of-date"
+                "-DCMAKE_CXX_FLAGS=-Ofast -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -Wno-backend-plugin -Wno-profile-instr-unprofiled -Wno-profile-instr-out-of-date"
+                "-DCMAKE_C_FLAGS=-Ofast -fprofile-use=${GITHUB_WORKSPACE}/pgo/eden.profdata -Wno-backend-plugin -Wno-profile-instr-unprofiled -Wno-profile-instr-out-of-date"
             )
         else
             EXTRA_CMAKE_FLAGS+=(
                 "-DCMAKE_C_COMPILER=clang-cl"
                 "-DCMAKE_CXX_COMPILER=clang-cl"
-                "-DCMAKE_CXX_FLAGS=-Ofast -DNOMINMAX"
-                "-DCMAKE_C_FLAGS=-Ofast -DNOMINMAX"
+                "-DCMAKE_CXX_FLAGS=-Ofast"
+                "-DCMAKE_C_FLAGS=-Ofast"
                 "-DCMAKE_C_COMPILER_LAUNCHER=sccache"
                 "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
             )

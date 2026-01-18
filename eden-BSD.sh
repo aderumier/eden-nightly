@@ -16,7 +16,6 @@ if [ "$TARGET" = "Solaris" ]; then
     export PATH="/usr/local/bin:$PATH"
 
     EXTRA_CMAKE_FLAGS+=(
-      "-DYUZU_USE_BUNDLED_OPENSSL=ON"
       "-DYUZU_USE_EXTERNAL_SDL2=ON"
       "-DENABLE_QT=OFF"
       "-DYUZU_CMD=ON"
@@ -33,16 +32,15 @@ elif [ "$TARGET" = "FreeBSD" ]; then
     export CXX=clang++20
     export LD=ld.lld20
 
-    QT6_DIR="/usr/local/lib/cmake/Qt6"
     EXTRA_CMAKE_FLAGS+=(
       "-DENABLE_LTO=ON"
       "-DYUZU_CMD=OFF"
       "-DYUZU_USE_BUNDLED_QT=OFF"
+      "-DYUZU_USE_BUNDLED_SDL2=ON"
       "-DENABLE_QT_TRANSLATION=ON"
       "-DENABLE_UPDATE_CHECKER=ON"
       "-DCMAKE_CXX_FLAGS=-Ofast -pipe -fuse-ld=lld -w"
       "-DCMAKE_C_FLAGS=-Ofast -pipe -fuse-ld=lld -w"
-      "-DQt6_DIR=${QT6_DIR}"
     )
 fi
 
@@ -51,6 +49,7 @@ cd build
 cmake .. -GNinja \
     -DBUILD_TESTING=OFF \
     -DYUZU_USE_BUNDLED_SIRIT=ON \
+    -DYUZU_USE_BUNDLED_OPENSSL=ON \
     -DYUZU_USE_CPM=ON \
     -DUSE_DISCORD_PRESENCE=OFF \
     -DYUZU_ROOM_STANDALONE=OFF \
