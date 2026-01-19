@@ -1,8 +1,8 @@
 diff --git a/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt b/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt
-index 23716ac5a5..761f2ced12 100644
+index 23716ac5a5..11257f2f46 100644
 --- a/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt
 +++ b/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt
-@@ -180,19 +180,58 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
+@@ -180,19 +180,57 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
  
      private fun checkForUpdates() {
          Thread {
@@ -54,7 +54,6 @@ index 23716ac5a5..761f2ced12 100644
 +            val padding = (16 * resources.displayMetrics.density).toInt()
 +            setPadding(padding, padding, padding, padding)
 +            textSize = 14f
-+            
 +        }
 +
 +        scrollView.addView(textView)
@@ -167,7 +166,7 @@ index 957843bee0..dad3221fdf 100644
 +std::optional<ReleaseInfo> GetLatestRelease(bool include_prereleases);
  } // namespace UpdateChecker
 diff --git a/src/yuzu/main_window.cpp b/src/yuzu/main_window.cpp
-index c246923fcc..88b31d051a 100644
+index 4aeecb9da7..bd217c2831 100644
 --- a/src/yuzu/main_window.cpp
 +++ b/src/yuzu/main_window.cpp
 @@ -70,6 +70,12 @@
@@ -212,7 +211,7 @@ index c246923fcc..88b31d051a 100644
                                 &MainWindow::OnEmulatorUpdateAvailable);
          update_watcher.setFuture(update_future);
      }
-@@ -4101,19 +4110,62 @@ void MainWindow::OnCaptureScreenshot() {
+@@ -4022,19 +4031,63 @@ void MainWindow::OnCaptureScreenshot() {
  
  #ifdef ENABLE_UPDATE_CHECKER
  void MainWindow::OnEmulatorUpdateAvailable() {
@@ -276,21 +275,22 @@ index c246923fcc..88b31d051a 100644
 +    main_layout->addWidget(new QLabel(tr("Download now?"), &update_dialog));
 +
 +    QDialogButtonBox* button_box = new QDialogButtonBox(
-+        QDialogButtonBox::Yes | QDialogButtonBox::Ignore, &update_dialog);
++        QDialogButtonBox::Yes | QDialogButtonBox::No, &update_dialog);
++
 +    connect(button_box, &QDialogButtonBox::accepted, &update_dialog, &QDialog::accept);
 +    connect(button_box, &QDialogButtonBox::rejected, &update_dialog, &QDialog::reject);
++
 +    main_layout->addWidget(button_box);
 +
-+    int result_code = update_dialog.exec();
-+    if (result_code == QDialog::Accepted) {
++    if (update_dialog.exec() == QDialog::Accepted) {
          auto const full_url = fmt::format("{}/{}/releases/tag/",
                                            std::string{Common::g_build_auto_update_website},
                                            std::string{Common::g_build_auto_update_repo}
 diff --git a/src/yuzu/main_window.h b/src/yuzu/main_window.h
-index 754fc67c06..7163502c1d 100644
+index 76ad165551..abbf677299 100644
 --- a/src/yuzu/main_window.h
 +++ b/src/yuzu/main_window.h
-@@ -476,8 +476,8 @@ private:
+@@ -471,8 +471,8 @@ private:
      std::shared_ptr<InputCommon::InputSubsystem> input_subsystem;
  
  #ifdef ENABLE_UPDATE_CHECKER
