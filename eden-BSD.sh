@@ -27,6 +27,8 @@ if [ "$TARGET" = "Solaris" ]; then
 elif [ "$TARGET" = "FreeBSD" ]; then
     # hook the updater to check my repo
     git apply ../patches/update.patch
+    # display changelog
+    git apply ../patches/changelog.patch
 
     EXTRA_CMAKE_FLAGS+=(
       "-DENABLE_LTO=ON"

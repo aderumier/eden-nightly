@@ -29,6 +29,8 @@ echo "   EXE Name: ${EXE_NAME}"
 # hook the updater to check my repo
 echo "-- Applying updater patch..."
 patch -p1 < ../patches/update.patch
+# display changelog
+patch -p1 < ../patches/changelog.patch
 echo "   Done."
 
 # Set Base CMake flags
