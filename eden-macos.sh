@@ -55,8 +55,8 @@ echo "-- Packing build artifacts..."
 mkdir -p artifacts
 mkdir "$APP_NAME"
 cp -a ./bin/. "$APP_NAME"
-ZIP_NAME="$APP_NAME.7z"
-7z a -t7z -mx=9 "$ZIP_NAME" "$APP_NAME"
+ZIP_NAME="$APP_NAME.zip"
+7z a -tzip -mx=9 "$ZIP_NAME" "$APP_NAME"
 mv -v "$ZIP_NAME" artifacts/
 
 echo "=== ALL DONE! ==="

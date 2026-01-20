@@ -142,8 +142,8 @@ fi
 echo "-- Packing build artifacts..."
 cd bin
 mv -v eden.exe "$EXE_NAME".exe
-ZIP_NAME="$EXE_NAME.7z"
-7z a -t7z -mx=9 "$ZIP_NAME" *
+ZIP_NAME="$EXE_NAME.zip"
+7z a -tzip -mx=9 "$ZIP_NAME" *
 rm -v "$EXE_NAME".exe
 echo "-- Packed into $ZIP_NAME"
 

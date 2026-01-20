@@ -506,4 +506,4 @@ jobs:
           fail_on_unmatched_files: false
           make_latest: true
           files: |
-            *.AppImage*, *.AppBundle*, *.7z, *.tar.gz, *.exe, *.apk
+            *.AppImage*, *.AppBundle*, *.zip, *.7z, *.tar.gz, *.exe, *.apk

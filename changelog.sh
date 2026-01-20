@@ -93,13 +93,13 @@ echo "| Android | [\`Replace\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Androi
 [\`Optimized\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Android-Optimized.apk)<br><br>\
 [\`ChromeOS\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Android-ChromeOS.apk)<br><br>\
 [\`Legacy\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Android-Legacy.apk) |" >> "$CHANGELOG_FILE"
-echo "| Windows (MSVC) | [\`x86_64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-MSVC-x86_64.7z) |" >> "$CHANGELOG_FILE"
-echo "| Windows (CLANG) | [\`x86_64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-Clang-x86_64.7z) |" >> "$CHANGELOG_FILE"
-echo "| Windows (MSYS2) | [\`x86_64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-MSYS2-x86_64.7z)<br><br>\
-[\`arm64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-MSYS2-arm64.7z) |" >> "$CHANGELOG_FILE"
+echo "| Windows (MSVC) | [\`x86_64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-MSVC-x86_64.zip) |" >> "$CHANGELOG_FILE"
+echo "| Windows (CLANG) | [\`x86_64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-Clang-x86_64.zip) |" >> "$CHANGELOG_FILE"
+echo "| Windows (MSYS2) | [\`x86_64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-MSYS2-x86_64.zip)<br><br>\
+[\`arm64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Windows-MSYS2-arm64.zip) |" >> "$CHANGELOG_FILE"
 echo "| FreeBSD | [\`amd64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-FreeBSD-amd64.tar.gz) | " >> "$CHANGELOG_FILE"
 echo "| Solaris | [\`amd64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Solaris-amd64.tar.gz) | " >> "$CHANGELOG_FILE"
-echo "| MacOS | [\`arm64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-MacOS-arm64.7z) |" >> "$CHANGELOG_FILE"
+echo "| MacOS | [\`arm64\`](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-MacOS-arm64.zip) |" >> "$CHANGELOG_FILE"
 echo "| Source Code | [Source](${BASE_DOWNLOAD_URL}/${TAG}/Eden-${COUNT}-Source-Code.7z) | |" >> "$CHANGELOG_FILE"
 echo "   - Added release table."
 

@@ -1,8 +1,8 @@
 diff --git a/src/android/app/build.gradle.kts b/src/android/app/build.gradle.kts
-index 87d815c92c..ad3688d13e 100644
+index 185704c8fe..94e2d503c3 100644
 --- a/src/android/app/build.gradle.kts
 +++ b/src/android/app/build.gradle.kts
-@@ -58,7 +58,7 @@ android {
+@@ -60,7 +60,7 @@ android {
      }
  
      defaultConfig {
@@ -11,18 +11,14 @@ index 87d815c92c..ad3688d13e 100644
          minSdk = 24
          targetSdk = 36
          versionName = getGitVersion()
-@@ -158,7 +158,13 @@ android {
-     productFlavors {
-         create("mainline") {
+@@ -174,8 +174,8 @@ android {
              dimension = "version"
+             isDefault = true
+ 
+-            manifestPlaceholders += mapOf("appNameBase" to "Eden")
 -            resValue("string", "app_name_suffixed", "Eden")
++            manifestPlaceholders += mapOf("appNameBase" to "Eden Nightly")
 +            resValue("string", "app_name_suffixed", "Eden Nightly")
-+
-+            sourceSets {
-+                getByName("mainline") {
-+                    res.srcDirs("src/main/legacy")
-+                }
-+            }
  
              ndk {
                  abiFilters += listOf("arm64-v8a")
