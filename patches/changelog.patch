@@ -122,7 +122,7 @@ index b8a282b234..2170394298 100644
          update_checker.cpp
          update_checker.h)
 diff --git a/src/frontend_common/update_checker.cpp b/src/frontend_common/update_checker.cpp
-index 9a8143c788..71d0447ae0 100644
+index 9a8143c788..b29e05bacf 100644
 --- a/src/frontend_common/update_checker.cpp
 +++ b/src/frontend_common/update_checker.cpp
 @@ -19,6 +19,12 @@
@@ -143,7 +143,7 @@ index 9a8143c788..71d0447ae0 100644
  }
  
 -std::optional<std::string> UpdateChecker::GetLatestRelease(bool include_prereleases) {
-+std::optional<UpdateChecker::ReleaseInfo> UpdateChecker::GetLatestRelease(bool include_prereleases) {
++std::optional<UpdateChecker::ReleaseInfo> UpdateChecker::GetLatestRelease(bool include_prereleases, const std::string& current_name) {
      const auto update_check_url = std::string{Common::g_build_auto_update_api};
      std::string update_check_path = fmt::format("/repos/{}",
                                                  std::string{Common::g_build_auto_update_repo});
@@ -162,7 +162,7 @@ index 9a8143c788..71d0447ae0 100644
          } else { // This is a stable release, only check for other stable releases.
              update_check_path += "/releases/latest";
              const auto response = UpdateChecker::GetResponse(update_check_url, update_check_path);
-@@ -113,10 +122,54 @@ std::optional<std::string> UpdateChecker::GetLatestRelease(bool include_prerelea
+@@ -113,10 +122,108 @@ std::optional<std::string> UpdateChecker::GetLatestRelease(bool include_prerelea
              if (!response)
                  return {};
  
@@ -195,24 +195,78 @@ index 9a8143c788..71d0447ae0 100644
 +            extracted_changelog.erase(extracted_changelog.find_last_not_of(" \n\r\t") + 1);
 +
 +            info.body = extracted_changelog;
- 
++
 +            if (json.contains("assets") && json["assets"].is_array()) {
-+                for (const auto& asset : json["assets"]) {
-+                    std::string name = asset.value("name", "");
-+                    std::string url = asset.value("browser_download_url", "");
-+                    bool match = false;
++                auto filter_assets = [&](bool precise_mode) {
++                    for (const auto& asset : json["assets"]) {
++                        std::string name = asset.value("name", "");
++                        std::string url = asset.value("browser_download_url", "");
++                        bool match = false;
 +#ifdef _WIN32
-+                    if (name.find("Windows") != std::string::npos) match = true;
++                        if (name.find("Windows") != std::string::npos) {
++                            match = true;
++
++                            if (precise_mode && !current_name.empty()) {
++                                const std::vector<std::string> toolchains = {"MSVC", "Clang", "MSYS2"};
++                                for (const auto& tc : toolchains) {
++                                    if (current_name.find(tc) != std::string::npos && name.find(tc) == std::string::npos) {
++                                        match = false;
++                                        break;
++                                    }
++                                }
+ 
++                                if (match) {
++                                    if (current_name.find("arm64") != std::string::npos && name.find("arm64") == std::string::npos) match = false;
++                                    if (current_name.find("x86_64") != std::string::npos && name.find("x86_64") == std::string::npos) match = false;
++                                }
++                            }
++                        }
 +#elif defined(__apple__)
-+                    if (name.find("MacOS") != std::string::npos) match = true;
++                        if (name.find("MacOS") != std::string::npos) match = true;
 +#elif defined(__FreeBSD__)
-+                    if (name.find("FreeBSD") != std::string::npos) match = true;
++                        if (name.find("FreeBSD") != std::string::npos) match = true;
 +#else
-+                    if (name.find("AppImage") != std::string::npos) match = true;
++                        bool is_appimage = (name.find(".AppImage") != std::string::npos);
++                        bool is_appbundle = (name.find(".AppBundle") != std::string::npos);
++
++                        if (is_appimage || is_appbundle) {
++                            match = true;
++
++                            if (precise_mode && !current_name.empty()) {
++                                std::string current_name_lower = current_name;
++                                std::transform(current_name_lower.begin(), current_name_lower.end(), current_name_lower.begin(), ::tolower);
++
++                                std::string asset_name_lower = name;
++                                std::transform(asset_name_lower.begin(), asset_name_lower.end(), asset_name_lower.begin(), ::tolower);
++
++                                const std::vector<std::string> features = {
++                                        ".appimage", ".appbundle",
++                                        "steamdeck", "rog_ally", "legacy", "common", "linux",
++                                        "pgo", "normal",
++                                        "aarch64", "x86_64"
++                                };
++
++                                for (const auto& f : features) {
++                                    bool cur_has = (current_name_lower.find(f) != std::string::npos);
++                                    bool asset_has = (asset_name_lower.find(f) != std::string::npos);
++
++                                    if (cur_has != asset_has) {
++                                        match = false;
++                                        break;
++                                    }
++                                }
++                            }
++                        }
 +#endif
-+                    if (match) {
++                        if (match) {
 +                        info.assets.push_back({name, url});
++                        }
 +                    }
++                };
++                filter_assets(true);
++
++                if (info.assets.empty()) {
++                    filter_assets(false);
 +                }
 +            }
 +            return info;
@@ -220,7 +274,7 @@ index 9a8143c788..71d0447ae0 100644
      } catch (nlohmann::detail::out_of_range &) {
          LOG_ERROR(Frontend,
                    "Parsing JSON response from {}{} failed during update check: "
-@@ -133,3 +186,76 @@ std::optional<std::string> UpdateChecker::GetLatestRelease(bool include_prerelea
+@@ -133,3 +240,76 @@ std::optional<std::string> UpdateChecker::GetLatestRelease(bool include_prerelea
          return {};
      }
  }
@@ -298,7 +352,7 @@ index 9a8143c788..71d0447ae0 100644
 +} // namespace UpdateChecker
 +#endif
 diff --git a/src/frontend_common/update_checker.h b/src/frontend_common/update_checker.h
-index 957843bee0..51b17fc333 100644
+index 957843bee0..b8f6a46cff 100644
 --- a/src/frontend_common/update_checker.h
 +++ b/src/frontend_common/update_checker.h
 @@ -9,8 +9,56 @@
@@ -356,7 +410,7 @@ index 957843bee0..51b17fc333 100644
 +
  std::optional<std::string> GetResponse(std::string url, std::string path);
 -std::optional<std::string> GetLatestRelease(bool include_prereleases);
-+std::optional<ReleaseInfo> GetLatestRelease(bool include_prereleases);
++std::optional<ReleaseInfo> GetLatestRelease(bool include_prereleases, const std::string& current_name = "");
 +
  } // namespace UpdateChecker
 diff --git a/src/yuzu/CMakeLists.txt b/src/yuzu/CMakeLists.txt
@@ -373,7 +427,7 @@ index 87d4652b07..e919eafeb9 100644
  target_link_libraries(yuzu PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
  
 diff --git a/src/yuzu/main_window.cpp b/src/yuzu/main_window.cpp
-index 4aeecb9da7..e0e418b2e2 100644
+index d44cc6f731..b106310c6b 100644
 --- a/src/yuzu/main_window.cpp
 +++ b/src/yuzu/main_window.cpp
 @@ -58,18 +58,26 @@
@@ -412,7 +466,7 @@ index 4aeecb9da7..e0e418b2e2 100644
  
  // These are wrappers to avoid the calls to CreateDirectory and CreateFile because of the Windows
  // defines.
-@@ -516,19 +525,27 @@ MainWindow::MainWindow(bool has_broken_vulkan)
+@@ -516,19 +525,41 @@ MainWindow::MainWindow(bool has_broken_vulkan)
  
  #ifdef ENABLE_UPDATE_CHECKER
      if (UISettings::values.check_for_updates) {
@@ -423,10 +477,26 @@ index 4aeecb9da7..e0e418b2e2 100644
                                          (strstr(Common::g_build_version, "beta") != NULL) ||
                                          (strstr(Common::g_build_version, "rc") != NULL));
 -            const std::optional<std::string> latest_release_tag =
-+            const std::optional<UpdateChecker::ReleaseInfo> latest_release =
-                 UpdateChecker::GetLatestRelease(is_prerelease);
+-                UpdateChecker::GetLatestRelease(is_prerelease);
 -            if (latest_release_tag && latest_release_tag.value() != Common::g_build_version) {
 -                return QString::fromStdString(latest_release_tag.value());
++
++            QString app_path;
++#ifdef Q_OS_LINUX
++            QByteArray appimage_env = qgetenv("APPIMAGE");
++            if (!appimage_env.isEmpty()) {
++                app_path = QString::fromLocal8Bit(appimage_env);
++            }else {
++                app_path = QCoreApplication::applicationFilePath();
+             }
+-            return QString{};
++#else
++            app_path = QCoreApplication::applicationFilePath();
++#endif
++            std::string current_name = app_path.toStdString();
++            const std::optional<UpdateChecker::ReleaseInfo> latest_release =
++                UpdateChecker::GetLatestRelease(is_prerelease, current_name);
++
 +            if (latest_release && latest_release->tag_name != Common::g_build_version) {
 +                QStringList list;
 +                list << QString::fromStdString(latest_release->tag_name);
@@ -437,8 +507,7 @@ index 4aeecb9da7..e0e418b2e2 100644
 +                    list << QString::fromStdString(asset.url);
 +                }
 +                return list;
-             }
--            return QString{};
++            }
 +            return QStringList();
          });
 -        update_watcher.connect(&update_watcher, &QFutureWatcher<QString>::finished, this,
@@ -446,7 +515,7 @@ index 4aeecb9da7..e0e418b2e2 100644
                                 &MainWindow::OnEmulatorUpdateAvailable);
          update_watcher.setFuture(update_future);
      }
-@@ -4022,24 +4039,153 @@ void MainWindow::OnCaptureScreenshot() {
+@@ -4022,24 +4053,154 @@ void MainWindow::OnCaptureScreenshot() {
  
  #ifdef ENABLE_UPDATE_CHECKER
  void MainWindow::OnEmulatorUpdateAvailable() {
@@ -510,14 +579,6 @@ index 4aeecb9da7..e0e418b2e2 100644
 +        log_view->setMaximumHeight(400);
 +        main_layout->addWidget(log_view);
 +    }
-+
-+    main_layout->addWidget(new QLabel(tr("Download now?"), &update_dialog));
-+
-+    QDialogButtonBox* button_box = new QDialogButtonBox(
-+        QDialogButtonBox::Yes | QDialogButtonBox::No, &update_dialog);
-+
-+    connect(button_box, &QDialogButtonBox::accepted, &update_dialog, &QDialog::accept);
-+    connect(button_box, &QDialogButtonBox::rejected, &update_dialog, &QDialog::reject);
  
 -    QMessageBox update_prompt(this);
 -    update_prompt.setWindowTitle(tr("Update Available"));
@@ -529,6 +590,14 @@ index 4aeecb9da7..e0e418b2e2 100644
 -    update_prompt.exec();
 -    if (update_prompt.button(QMessageBox::Yes) == update_prompt.clickedButton()) {
 -        auto const full_url = fmt::format("{}/{}/releases/tag/",
++    main_layout->addWidget(new QLabel(tr("Download now?"), &update_dialog));
++
++    QDialogButtonBox* button_box = new QDialogButtonBox(
++        QDialogButtonBox::Yes | QDialogButtonBox::No, &update_dialog);
++
++    connect(button_box, &QDialogButtonBox::accepted, &update_dialog, &QDialog::accept);
++    connect(button_box, &QDialogButtonBox::rejected, &update_dialog, &QDialog::reject);
++
 +    main_layout->addWidget(button_box);
 +
 +    if (update_dialog.exec() == QDialog::Accepted) {
@@ -567,12 +636,12 @@ index 4aeecb9da7..e0e418b2e2 100644
 +#endif
 +        QString save_path = QDir(save_dir).filePath(fileName);
 +
-+        QProgressDialog* progress = new QProgressDialog(
-+            tr("Downloading Update: %1").arg(fileName),
-+            tr("Cancel"), 0, 100, this);
-+
++        QProgressDialog* progress = new QProgressDialog(this);
 +        progress->setWindowModality(Qt::WindowModal);
-+        progress->setMinimumDuration(0);
++        progress->setWindowTitle(tr("Downloading..."));
++        progress->setLabelText(fileName);
++        progress->setCancelButtonText(tr("Cancel"));
++        progress->setRange(0, 100);
 +        progress->show();
 +
 +        auto* downloader = new UpdateChecker::UpdateDownloader(this);
@@ -584,7 +653,7 @@ index 4aeecb9da7..e0e418b2e2 100644
 +        });
 +
 +        connect(downloader, &UpdateChecker::UpdateDownloader::downloadFinished, this, [this, progress, save_path, downloader](bool success, QString msg){
-+            progress->close();
++            progress->hide();
 +            if (success) {
 +                if (save_path.endsWith(QLatin1String(".zip"), Qt::CaseInsensitive)) {
 +                    QString extract_path = QCoreApplication::applicationDirPath();
@@ -595,7 +664,7 @@ index 4aeecb9da7..e0e418b2e2 100644
 +
 +                        QFile::remove(save_path);
 +                    } else {
-+                        QMessageBox::warning(this, tr("Extraction Failed"), tr("Failed to extract the update package."));
++                        QMessageBox::warning(this, tr("Failed"), tr("Failed to extract the update package."));
 +                    }
 +                }
 +                else {
@@ -603,8 +672,9 @@ index 4aeecb9da7..e0e418b2e2 100644
 +                    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(save_path).absolutePath()));
 +                }
 +            } else {
-+                QMessageBox::warning(this, tr("Download Failed"), msg);
++                QMessageBox::information(this, tr("Update"), msg);
 +            }
++            progress->deleteLater();
 +            downloader->deleteLater();
 +        });
 +
@@ -615,7 +685,7 @@ index 4aeecb9da7..e0e418b2e2 100644
  }
  #endif
 diff --git a/src/yuzu/main_window.h b/src/yuzu/main_window.h
-index 76ad165551..abbf677299 100644
+index fe91ea18f1..c0fc8dba3d 100644
 --- a/src/yuzu/main_window.h
 +++ b/src/yuzu/main_window.h
 @@ -471,8 +471,8 @@ private:
