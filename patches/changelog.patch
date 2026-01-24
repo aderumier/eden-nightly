@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index fe73f558c9..ef3fef7f6d 100644
+index 147d175989..9220f5c909 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -601,6 +601,10 @@ if (ENABLE_QT)
+@@ -605,6 +605,10 @@ if (ENABLE_QT)
          find_package(Qt6 REQUIRED COMPONENTS Multimedia)
      endif()
  
@@ -14,7 +14,7 @@ index fe73f558c9..ef3fef7f6d 100644
          # yes Qt, we get it
          set(QT_NO_PRIVATE_MODULE_WARNING ON)
 diff --git a/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt b/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt
-index 23716ac5a5..20305f5d35 100644
+index 23716ac5a5..4e6855ef43 100644
 --- a/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt
 +++ b/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt
 @@ -180,19 +180,57 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
@@ -53,7 +53,7 @@ index 23716ac5a5..20305f5d35 100644
 +                .replace(Regex("\\[(.*?)\\]\\((.*?)\\)"), "<a href=\"$2\">$1</a>")
 +                .replace(Regex("\\*\\*(.*?)\\*\\*"), "<b>$1</b>")
 +                .replace(Regex("`(.*?)`"), "<font color='#FF4081'><tt>$1</tt></font>")
-+                .replace("- Merged commit:", "• <b>Merged commit:</b>")
++                .replace("- Merged commit:", "• Merged commit:")
 +                .replace("\n", "<br>")
 +                .replace(Regex("^<br>+"), "")
 +
@@ -414,7 +414,7 @@ index 957843bee0..b8f6a46cff 100644
 +
  } // namespace UpdateChecker
 diff --git a/src/yuzu/CMakeLists.txt b/src/yuzu/CMakeLists.txt
-index 87d4652b07..e919eafeb9 100644
+index 35c6f80e40..a3384605fe 100644
 --- a/src/yuzu/CMakeLists.txt
 +++ b/src/yuzu/CMakeLists.txt
 @@ -391,7 +391,7 @@ elseif(WIN32)
@@ -427,7 +427,7 @@ index 87d4652b07..e919eafeb9 100644
  target_link_libraries(yuzu PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
  
 diff --git a/src/yuzu/main_window.cpp b/src/yuzu/main_window.cpp
-index d44cc6f731..b106310c6b 100644
+index d44cc6f731..e4a1eeb732 100644
 --- a/src/yuzu/main_window.cpp
 +++ b/src/yuzu/main_window.cpp
 @@ -58,18 +58,26 @@
@@ -550,7 +550,7 @@ index d44cc6f731..b106310c6b 100644
 +        QString html_changelog = changelog.toHtmlEscaped();
 +
 +        html_changelog.replace(QStringLiteral("- Merged commit:"),
-+                       QStringLiteral("&bull; <b>Merged commit:</b>"));
++                       QStringLiteral("&bull; Merged commit:"));
 +
 +        static QRegularExpression link_re(QStringLiteral(R"(\[(.*?)\]\((.*?)\))"));
 +        html_changelog.replace(link_re, QStringLiteral(R"(<a href="\2">\1</a>)"));
@@ -576,7 +576,7 @@ index d44cc6f731..b106310c6b 100644
 +        log_view->setTextInteractionFlags(Qt::TextBrowserInteraction);
 +
 +        log_view->setMinimumHeight(200);
-+        log_view->setMaximumHeight(400);
++        log_view->setMaximumHeight(500);
 +        main_layout->addWidget(log_view);
 +    }
  

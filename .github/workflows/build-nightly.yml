@@ -411,7 +411,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [FreeBSD, Solaris]
+        target: [FreeBSD]
     env:
       TARGET: ${{ matrix.target }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
