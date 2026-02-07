@@ -108,8 +108,8 @@ case "$TARGET" in
     common)
         TARGET="Common"
         EXTRA_CMAKE_FLAGS+=(
-            "-DYUZU_USE_EXTERNAL_SDL2=OFF"
-            "-DYUZU_USE_BUNDLED_SDL2=ON"
+            "-DYUZU_USE_EXTERNAL_SDL2=ON"
+            "-DYUZU_USE_BUNDLED_SDL2=OFF"
         )
 
         if [[ "$OPTIMIZE" == "PGO" ]]; then
@@ -133,8 +133,8 @@ case "$TARGET" in
     legacy)
         TARGET="Legacy"
         EXTRA_CMAKE_FLAGS+=(
-            "-DYUZU_USE_EXTERNAL_SDL2=OFF"
-            "-DYUZU_USE_BUNDLED_SDL2=ON"
+            "-DYUZU_USE_EXTERNAL_SDL2=ON"
+            "-DYUZU_USE_BUNDLED_SDL2=OFF"
         )
 
         if [[ "$OPTIMIZE" == "PGO" ]]; then
